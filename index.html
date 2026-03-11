@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>かんたん割り勘アプリ</title>
+  <base href="./" />
+  <meta name="description" content="シンプルで見やすい、スマホ対応の割り勘計算アプリ。金額と人数を入れるだけで1人あたりや個別調整を自動計算します。" />
+  <meta name="theme-color" content="#020617" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="かんたん割り勘アプリ" />
+  <meta property="og:description" content="合計・個別・履歴まで一度に管理できる、かんたん割り勘計算ツール。スマホからそのまま使えます。" />
+  <meta property="og:locale" content="ja_JP" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header-main">
+        <h1>かんたん割り勘</h1>
+        <p>金額を入れると合計と1人あたりの金額を自動計算します。</p>
+      </div>
+      <nav class="app-nav" aria-label="メイン">
+        <button type="button" class="nav-item is-active" data-page="calc" id="navCalc">計算</button>
+        <button type="button" class="nav-item" data-page="history" id="navHistory">履歴</button>
+        <button type="button" class="nav-item" data-page="members" id="navMembers">メンバー</button>
+      </nav>
+    </header>
+
+    <main id="pageCalc" class="page is-active">
+      <section class="card">
+        <h2>人数と明細</h2>
+        <div class="field-group">
+          <label for="calcTitle">タイトル</label>
+          <input type="text" id="calcTitle" class="calc-title-input" />
+        </div>
+        <div class="field-group">
+          <label for="peopleCount">人数</label>
+          <div class="field-inline">
+            <input type="number" id="peopleCount" min="1" value="2" inputmode="numeric" />
+            <span>人</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label-row">
+            <label>個別に多めに払う金額</label>
+          </div>
+          <p class="hint-text">
+            人数分の枠が自動でできます。<br />
+            ここに入力した金額は<strong>合計金額から引かれたうえで、その人の支払い金額にそのまま足されます。</strong>
+          </p>
+          <div id="personsContainer" class="persons-container"></div>
+        </div>
+        <div class="field-group">
+          <div class="field-label-row">
+            <label>明細（金額を入力してください）</label>
+            <button id="addRowBtn" type="button" class="ghost-button">＋ 行を追加</button>
+          </div>
+          <div id="itemsContainer" class="items-container"></div>
+        </div>
+        <div class="actions">
+          <button id="newCalcBtn" type="button" class="secondary-button">新しい計算</button>
+          <button id="resetBtn" type="button" class="secondary-button">リセット</button>
+        </div>
+      </section>
+      <section class="card card-result" aria-live="polite">
+        <h2>結果</h2>
+        <div class="result-row">
+          <span>合計金額</span>
+          <span id="totalAmount" class="result-value">- 円</span>
+        </div>
+        <div class="result-row small">
+          <span>個別調整後の合計</span>
+          <span id="adjustedTotalAmount" class="result-value">- 円</span>
+        </div>
+        <div class="result-row">
+          <span>1人あたり</span>
+          <span id="perPerson" class="result-value">- 円</span>
+        </div>
+        <div class="result-row small">
+          <span>端数（割り切れない分）</span>
+          <span id="remainder" class="result-value">- 円</span>
+        </div>
+        <p id="message" class="message"></p>
+      </section>
+    </main>
+
+    <main id="pageHistory" class="page" hidden>
+      <section class="card card-history">
+        <h2>履歴</h2>
+        <div class="field-group">
+          <label for="historySearchInput">メンバーで検索</label>
+          <div class="history-search-row">
+            <input type="text" id="historySearchInput" class="history-search-input" list="memberNamesDatalist" placeholder="名前で絞り込み" />
+            <button type="button" id="historySearchSelectBtn" class="person-select-member-btn" title="登録メンバーから選択">選ぶ</button>
+          </div>
+        </div>
+        <p class="history-note">タップで詳細表示</p>
+        <div id="historyList" class="history-list history-list-page"></div>
+        <p id="historyEmpty" class="history-empty">まだ履歴はありません。</p>
+      </section>
+    </main>
+
+    <main id="pageMembers" class="page" hidden>
+      <section class="card">
+        <h2>名前の登録</h2>
+        <p class="hint-text">登録した名前は、計算ページの「個別に多めに払う金額」の名前欄に反映されます。</p>
+        <div class="field-group">
+          <label for="newMemberName">名前を追加</label>
+          <div class="member-add-row">
+            <input type="text" id="newMemberName" class="member-name-input" maxlength="32" />
+            <button type="button" id="addMemberBtn" class="primary-button">追加</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label-row">
+            <label>登録済みメンバー</label>
+          </div>
+          <ul id="savedMembersList" class="saved-members-list"></ul>
+          <p id="savedMembersEmpty" class="history-empty">まだ登録されていません。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <datalist id="memberNamesDatalist"></datalist>
+  <div id="memberSelectDropdown" class="member-select-dropdown member-select-dropdown-global" hidden></div>
+  <script src="script.js"></script>
+</body>
+</html>
